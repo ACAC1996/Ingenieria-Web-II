@@ -28,7 +28,7 @@ router.get('/', async function(req,res){
     }
 });
 
-router.put('/:marcaId', function(req,res){
+router.put('/:marcaId', async function(req,res){
     try{
         let marca = await Marca.findById(req.params.marcaId);
         if (!marca){
