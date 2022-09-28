@@ -1,10 +1,16 @@
 const {Router} = require('express');
 const Inventario = require('../models/Inventario');
+const {validarInventario} = require('../helpers/validar-inventario');
 
 const router = Router();
 
 router.post('/', async function(req,res){
     try{
+        const validaciones= validarInventario(req);
+
+        if(validaciones.lenght > 0){
+            return res.status(400).send(validaciones());
+        }
         const existeInventarioPorSerial = await Inventario.findOne({serial: req.body.serial});
         if(existeInventarioPorSerial){
             return res.status(400).send('Ya existe el serial para otro equipo');
@@ -58,6 +64,12 @@ router.get('/', async function(req,res){
 
 router.put('/:inventarioId', async function(req,res){
     try{
+        const validaciones= validarInventario(req);
+
+        if(validaciones.lenght > 0){
+            return res.status(400).send(validaciones());
+        }
+
         let inventario = await Inventario.findById(req.params.inventarioId);
         if(!inventario){
             return res.status(400).send('Inventario no existe');
@@ -88,4 +100,18 @@ router.put('/:inventarioId', async function(req,res){
         res.status(500).send('Ocurrió un error al consultar inventarios');
     } 
 });
+
+router.get('/:inventarioId', async function(req, res){
+    try{
+        const inventario = await Inventario.findById(req.params.inventarioId);
+        if(!inventario){
+            return res.status(404).send('Inventario no existe');
+        }
+        res.send(inventario);
+    }catch(error){
+        console.log(error);
+        res.status(500).send('Ocurrió un error al consultar inventarios');
+    }
+})
+
 module.exports = router;

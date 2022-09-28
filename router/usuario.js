@@ -1,9 +1,16 @@
 const {Router} = require('express');
+const { validarUsuario } = require('../helpers/validar-usuario');
 const router = Router();
 const Usuario = require('../models/Usuario');
 
 router.post('/', async function(req,res){
     try{
+        const validaciones= validarUsuario(req);
+
+        if(validaciones.lenght > 0){
+            return res.status(400).send(validaciones());
+        }
+
         console.log('Objeto recibido', req.body);
 
         const existeUsuario = await Usuario.findOne({email: req.body.email});
@@ -40,6 +47,12 @@ router.get('/', async function(req,res){
 
 router.put('/:usuarioId', async function(req,res){
     try{
+        const validaciones= validarUsuario(req);
+
+        if(validaciones.lenght > 0){
+            return res.status(400).send(validaciones());
+        }
+
         console.log('Objeto recibido', req.body, req.params);
 
         let usuario = await Usuario.findById(req.params.usuarioId);
@@ -65,6 +78,19 @@ router.put('/:usuarioId', async function(req,res){
     }catch(error){
         console.log(error);
         res.send('Ocurrió un error');
+    }
+});
+
+router.get('/:usuarioId', async function(req, res){
+    try{
+        const usuario = await Usuario.findById(req.params.usuarioId);
+        if(!usuario){
+            return res.status(404).send('Inventario no existe');
+        }
+        res.send(usuario);
+    }catch(error){
+        console.log(error);
+        res.status(500).send('Ocurrió un error al consultar usuarios');
     }
 });
 module.exports = router;
